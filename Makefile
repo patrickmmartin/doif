@@ -26,5 +26,5 @@ fail1 fail2 fail3 fail4: fail%:
 	@$(if $(wildcard $@.pass) ,true, false)
 
 fix1 fix2 fix3 fix4: fix%:
-	@echo. > $@.pass
+	@echo. > $(subst fix,fail,$@.pass)
 
