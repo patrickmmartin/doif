@@ -4,17 +4,22 @@ def doif(test_action, fix_action, targets):
     import subprocess
 
     for target in targets:
-        print "target %s ========================" % target
-        ret = subprocess.call([test_action, target])
+        print "tested %d, fixed %d, failed to fix %d" % (len(targets), fixed, failed)
+        print "==== TEST 1 target %s ========================" % target
+        test_cmd = test_action +" " + target        
+        ret = subprocess.call([test_cmd], shell=True)
         if (ret > 0):
             print "target %s failed test - fixing with %s" % (target, fix_action)
-            ret = subprocess.call([fix_action, target])
+            fix_cmd = fix_action +" " + target        
+            print "==== FIX target %s ========================" % target
+            ret = subprocess.call([fix_cmd], shell=True)
             if (ret > 0):
                 print "target %s fix process failed" % target
                 # GAME OVER
                 failed += 1
             else:
-                ret = subprocess.call([test_action, target])
+                print "==== TEST 2 target %s ========================" % target
+                ret = subprocess.call([test_cmd], shell=True)
                 if (ret > 0):
                     print "target %s failed to fix" % target
                     failed += 1
@@ -37,4 +42,6 @@ if (__name__ == '__main__'):
     if ((len(sys.argv)) < 4):
         usage(sys.argv[0])
     else:
-        sys.exit(doif(sys.argv[1], sys.argv[2], sys.argv[3:]))
+        test, fix, targets = sys.argv[1], sys.argv[2], sys.argv[3:]
+        print "test: '%s' fix: '%s' targets: %s" % (test, fix, targets)
+        sys.exit(doif(test, fix, targets))
