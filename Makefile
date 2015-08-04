@@ -1,4 +1,20 @@
-TARGETS= pass1 fail1 pass2 fail2 pass3 fail3 pass4 fail4
+TARGETS= pass1 pass2 fixable1 fixable2 broken1 broken2
+
+action?=test
+
+# defined to defer expansion until target execution 
+define FIX_ACTION=
+echo . > $@.pass
+endef
+
+define TEST_ACTION=
+$(if $(wildcard $@.pass) ,true, false)
+endef
+
+define ECHO=
+@echo running $@ $$action
+endef
+
 
 # dodge for printing new lines
 define NL
@@ -6,25 +22,39 @@ define NL
 
 endef
 
+default: header-targets list-targets
+
 header-targets:
 	@echo available targets are:
 
 list-targets:
 	@$(foreach var,$(TARGETS), @echo $(var) $(NL) )
 
-default: header-targets list-targets
-
-clean:
-	@del *.pass 2>null
-
 targets: $(TARGETS)
 
 pass1 pass2 pass3 pass4: pass%:
+	$(ECHO)
 	@true
 
-fail1 fail2 fail3 fail4: fail%:
-	@$(if $(wildcard $@.pass) ,true, false)
+# targets broken after clean but can be fixed
+fixable1 fixable2: fixable%:
+	$(ECHO)
+ifeq ($(action),fix)
+	@$(FIX_ACTION)
+else
+	@$(TEST_ACTION)
+endif
 
-fix1 fix2 fix3 fix4: fix%:
-	@echo. > $(subst fix,fail,$@.pass)
+# targets that are always broken
+broken1 broken2: broken%:
+	$(ECHO)
+	@false
+
+# this will break fixable#n for you
+clean:
+	@-del *.pass 2>null
+
+# these will fix fixable#n for you
+fix1 fix2: fix%:
+	@echo .  > $(subst fix,fixable,$@.pass)
 
