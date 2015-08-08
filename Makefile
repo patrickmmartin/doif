@@ -22,6 +22,12 @@ define NL
 
 endef
 
+ifeq ($(OS),"Windows_NT")
+  RM_SILENT=2>NUL del
+else
+  RM_SILENT=2>/dev/null rm
+endif 
+
 default: header-targets list-targets
 
 header-targets:
@@ -52,7 +58,7 @@ broken1 broken2: broken%:
 
 # this will break fixable#n for you
 clean:
-	@-del *.pass 2>null
+	@-$(RM_SILENT) *.pass
 
 # these will fix fixable#n for you
 fix1 fix2: fix%:
