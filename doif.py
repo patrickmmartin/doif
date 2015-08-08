@@ -1,27 +1,31 @@
 
 def doif(test_action, fix_action, targets):
-    fixed, failed = 0, 0
+    count, fixed, failed = 0, 0, 0
     import subprocess
 
     for target in targets:
-        print "tested %d, fixed %d, failed to fix %d" % (len(targets), fixed, failed)
+        count += 1
+        print "targets %d/%d, fixed %d, failed to fix %d" % (count, len(targets), fixed, failed)
         print "==== TEST 1 target %s ========================" % target
-        test_cmd = test_action +" " + target        
+        test_cmd = "%s %s 2> %s-test.err 1> %s-test.out" % (test_action, target, target, target)
+#        test_cmd = "%s %s " % (test_action, target)
         ret = subprocess.call([test_cmd], shell=True)
-        if (ret > 0):
-            print "target %s failed test - fixing with %s" % (target, fix_action)
-            fix_cmd = fix_action +" " + target        
+        if (ret != 0):
+            print "target %s failed test with %d - fixing with %s" % (target, ret, fix_action)
+            fix_cmd = "%s %s 2> %s-fix.err 1> %s-fix.out" % (fix_action, target, target, target)
+#            fix_cmd = "%s %s" % (fix_action, target)
             print "==== FIX target %s ========================" % target
             ret = subprocess.call([fix_cmd], shell=True)
-            if (ret > 0):
-                print "target %s fix process failed" % target
+            if (ret != 0):
+                print "target %s fix process failed with %d" % (target, ret)
                 # GAME OVER
                 failed += 1
             else:
+                print "target %s fix process succeeded" % target
                 print "==== TEST 2 target %s ========================" % target
                 ret = subprocess.call([test_cmd], shell=True)
-                if (ret > 0):
-                    print "target %s failed to fix" % target
+                if (ret != 0):
+                    print "target %s failed to fix with %d" % (target, ret)
                     failed += 1
                 else:
                     print "target %s fixed after initial fail" % target
